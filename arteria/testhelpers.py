@@ -4,6 +4,7 @@ import requests
 import re
 import unittest
 
+
 class BaseRestTest(unittest.TestCase):
     def _base_url(self):
         raise NotImplementedError("The method base url must be implemented")
@@ -82,6 +83,10 @@ class TestFunctionDelta:
         self._sleep = sleep
 
     def _assert_changed_by(self, expected, compare_to):
+        """
+        Asserts that the result of calling the wrapped function
+        has increased by the expected number since last asserted
+        """
         def evaluate():
             self._current = self._func()
             return self._current - compare_to

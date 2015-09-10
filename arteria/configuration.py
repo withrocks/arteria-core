@@ -2,10 +2,14 @@ import logging
 import yaml
 import threading
 
+
 class ConfigurationService:
     def __init__(self, logger=None, logger_config_path=None, app_config_path=None):
         """
         Initializes a configuration service
+
+        The files pointed to should be YAML. The service reads these
+        configuration files and caches them through the lifetime of the process
 
         :param logger: The logger instance to use. Will default to one named like the module
         :param logger_config_path: The path to the logger config file
@@ -18,9 +22,6 @@ class ConfigurationService:
         # The app config and logger config will now be accessible through:
         config_svc.get_app_config()
         config_svc.get_logger_config()
-
-        # Config files are cached in-memory
-        # The config files should be YAML
         """
         self._logger = logger or logging.getLogger(__name__)
         self._logger_config_path = logger_config_path
@@ -45,7 +46,6 @@ class ConfigurationService:
         """Loads the config file, possibly from cache"""
         must_fetch = lambda: (not from_cache) or (path not in self._cache)
         if must_fetch():
-            # TODO: Code review threading code
             with self._cache_lock:
                 if must_fetch():
                     config_file = ConfigurationService.read_yaml(path)

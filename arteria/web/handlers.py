@@ -27,13 +27,22 @@ class BaseRestHandler(tornado.web.RequestHandler):
         return obj
 
     def api_link(self, version="1.0"):
+        """
+        When called with an active request, returns a link to the API, based on
+        the requested URL
+
+        :param version: The version of the API to point to
+        :returns: The URL of the API
+        """
         return "%s://%s/api/%s" % (self.request.protocol, self.request.host, version)
+
 
 class LogLevelHandler(BaseRestHandler):
     """
     Handles getting/setting the log_level of the running application
     """
     def initialize(self, app_svc):
+        """Initializes the handler's member variables"""
         self.app_svc = app_svc
 
     def get(self):
@@ -52,11 +61,13 @@ class LogLevelHandler(BaseRestHandler):
         self.app_svc.set_log_level(log_level)
         self.write_object({"log_level": log_level})
 
+
 class ApiHelpHandler(BaseRestHandler):
     """
     Handles requests for the api help, available at the root of the application
     """
     def initialize(self, route_svc):
+        """Initializes the handler's member variables"""
         self.route_svc = route_svc
 
     def get(self):

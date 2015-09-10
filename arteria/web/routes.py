@@ -3,9 +3,18 @@ import re
 import itertools
 from tornado.web import URLSpec
 
+
 class RouteInfo:
     """Information about a method in a route"""
+
     def __init__(self, route, method, description):
+        """
+        Initializes the object
+
+        :param route: The route
+        :param method: The HTTP method accepted
+        :param description: A help description of the route
+        """
         self.route = route
         self.method = method
         self.description = description
@@ -15,7 +24,7 @@ class RouteInfo:
 
 
 class RouteService:
-    """Encapsulates Tornado routes and generates help from their class definitions"""
+    """Generates JSON formatted API help based on Tornado routes"""
 
     def __init__(self, app_svc, debug):
         """
@@ -34,13 +43,15 @@ class RouteService:
         self._routes = None
 
     def set_routes(self, routes):
+        """Set the routes for which help should be generated"""
         self._routes = routes
 
     def get_routes(self):
+        """Get the configured routes"""
         return self._routes
 
     def get_help(self, base_url):
-        """Returns the API help based on the routes"""
+        """Generates API help based on the routes configured through set_routes"""
         return self._generate_help(False, base_url)
 
     def _get_route_infos(self, tornado_routes, base_url):
@@ -55,7 +66,6 @@ class RouteService:
             raise RoutesNotSetError("Routes must be set before RouteInfos can be generated")
 
         for tornado_route in tornado_routes:
-
             if isinstance(tornado_route, URLSpec):
                 route = tornado_route.regex.pattern
                 cls = tornado_route.handler_class
@@ -73,7 +83,7 @@ class RouteService:
         Returns the doc string for the attribute
 
         Ignores the documentation if it has the undocumented attribute
-        and is not running in debug mode
+        and if not running in debug mode
         """
         attr = getattr(cls, attr_name)
         doc = attr.__doc__
@@ -114,13 +124,19 @@ class RouteService:
         return routes
 
     def _generate_help(self, regenerate, base_url):
-        """Generates help from self._routes"""
+        """
+        Generates help from self._routes if it hasn't been generated before
+        or overridden by regenerate.
+
+        Thread-safe.
+        """
         if not self._help_generated or regenerate:
             with self._help_generated_lock:
                 if not self._help_generated:
                     self._route_infos = self._get_route_infos_grouped(self._routes, base_url)
                     self._help_generated = True
         return self._route_infos
+
 
 class RoutesNotSetError(Exception):
     pass
